@@ -7,6 +7,7 @@ pub struct VideoContent {
     pub title: String,
     pub description: String,
     pub lang: String,
+    pub font: String,
     pub bg: MediaAsset,
     pub music: Vec<MediaAsset>,
 }

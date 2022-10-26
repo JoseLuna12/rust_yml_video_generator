@@ -6,7 +6,7 @@ pub struct FfmpegComands {
     pub concat_music: String,
     pub background: String,
     pub merge_file: (String, String),
-    pub current_video_title: String,
+    pub current_video: VideoContent,
 }
 
 fn get_concat_audio(media_asset: &Vec<MediaAsset>) -> String {
@@ -28,8 +28,9 @@ impl FfmpegComands {
         FfmpegComands {
             concat_music: get_concat_audio(&content.music),
             background: get_loop_video(&content.bg),
-            merge_file: (content.bg.path, "/output/output.mp4".to_owned()),
-            current_video_title: content.title,
+            merge_file: (content.bg.path.to_owned(), "/output/output.mp4".to_owned()),
+            current_video: content,
+            // current_video_title: content.title,
         }
     }
 }

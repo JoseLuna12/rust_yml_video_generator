@@ -1,7 +1,8 @@
 mod utils;
 
 fn main() {
-    let test = utils::yaml_reader::VideoContent::new(String::from("./src/test.yaml"));
+    let yaml_location = std::env::args().nth(1).expect("no Yaml file given");
+    let test = utils::yaml_reader::VideoContent::new(yaml_location);
     match test {
         Some(value) => {
             let exc_commands = utils::ffmpeg_commands::FfmpegComands::new(value);

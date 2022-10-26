@@ -2,11 +2,11 @@ use std::process::Command;
 
 use super::ffmpeg_commands::FfmpegComands;
 
-pub enum FfmpegActions {
+pub enum FfmpegActions<'action_lt> {
     MergeMusic,
     LoopVideo(i16),
     CreateVideo(String),
-    CreateThumbnail(String),
+    CreateThumbnail((&'action_lt str, &'action_lt str)),
 }
 
 fn ffmpeg_merge_final(input_path: String) {
@@ -62,7 +62,7 @@ fn loop_bg_video(video_path: &str, loop_time: i16) {
         .expect("failed to execute process");
 }
 
-fn thumbnail_generator(thumbnail_title: &str) {
+fn thumbnail_generator(thumbnail_title: &str, font: &str) {
     let output_thumb1 = Command::new("ffmpeg")
         .args([
             "-ss",
@@ -71,7 +71,7 @@ fn thumbnail_generator(thumbnail_title: &str) {
             "output/final.mp4",
             "-frames:v",
             "1",
-            "thumb.png",
+            "output/frame.png",
         ])
         .output()
         .expect("failed to execute process");
@@ -80,11 +80,11 @@ fn thumbnail_generator(thumbnail_title: &str) {
     println!("stdout: {}", String::from_utf8_lossy(&output_thumb1.stdout));
     println!("stderr: {}", String::from_utf8_lossy(&output_thumb1.stderr));
 
-    let image_text = format!("drawtext=fontfile=fonts/montserrat.ttf:text='{}':fontcolor=white:fontsize=125:x=(w-text_w)/2:y=(h-text_h)/2", thumbnail_title);
+    let image_text = format!("drawtext=fontfile=fonts/{}:text='{}':fontcolor=white:fontsize=125:x=(w-text_w)/2:y=(h-text_h)/2", font,thumbnail_title);
     let output_thumb2 = Command::new("ffmpeg")
         .args([
             "-i",
-            "thumb.png",
+            "output/frame.png",
             "-vf",
             &image_text,
             "-y",
@@ -103,7 +103,7 @@ pub fn call_ffmpeg(media: &str, action: FfmpegActions) {
         FfmpegActions::MergeMusic => ffmpeg_music(media),
         FfmpegActions::LoopVideo(loop_time) => loop_bg_video(media, loop_time),
         FfmpegActions::CreateVideo(path) => ffmpeg_merge_final(path),
-        FfmpegActions::CreateThumbnail(title) => thumbnail_generator(&title),
+        FfmpegActions::CreateThumbnail((title, font)) => thumbnail_generator(title, font),
     };
 }
 
@@ -125,6 +125,9 @@ pub fn call_ffmpeg_abstr(commands: FfmpegComands, loop_bg: bool) {
     }
     call_ffmpeg(
         &commands.background,
-        FfmpegActions::CreateThumbnail(commands.current_video_title),
+        FfmpegActions::CreateThumbnail((
+            &commands.current_video.title,
+            &commands.current_video.font,
+        )),
     )
 }
